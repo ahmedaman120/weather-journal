@@ -18,9 +18,7 @@ app.use(cors());
 // Initialize the main project folder
 app.use(express.static('website'));
 
-app.get('/test', (req, res) => {
-    res.send('i am working');
-});
+
 // Setup Server
 
 app.listen(PORT, function() {
