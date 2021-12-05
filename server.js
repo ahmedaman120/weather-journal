@@ -18,6 +18,27 @@ app.use(cors());
 // Initialize the main project folder
 app.use(express.static('website'));
 
+//Begin of Server's API
+app.get('/all', (req, res) => {
+    res.send(projectData)
+        .status(200)
+        .end();
+});
+
+//post request 
+/**
+ * post request will run after call api to handle the 
+ * temprature 
+ */
+app.post('/submitData', (req, res) => {
+    projectData.temp = req.body.temp;
+    projectData.date = req.body.date;
+    projectData.content = req.body.content;
+    res.send(projectData)
+        .status(200)
+        .end();
+});
+//End of Server's API
 
 // Setup Server
 
