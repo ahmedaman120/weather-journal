@@ -18,7 +18,7 @@ let baseURL = `http://api.openweathermap.org/data/2.5/weather?${searchType}=`;
 //helper functions
 //function to convert kelvin temp to Fahrenheit
 function convertKelvitToFahrenheit(tempInK) {
-    return (tempInK * (9 / 5)) - 459.67;
+    return (tempInK * 1.8) - 459.67;
 }
 
 // Create a new date instance dynamically with JS
@@ -44,7 +44,7 @@ let contentDiv = document.getElementById('content');
 const btnSubmit = document.getElementById('generate');
 
 //get weather function
-const getWeather = async(URL) => {
+const getWeatherFromOut = async(URL) => {
     let res = await fetch(URL);
     try {
         let resJSON = await res.json();
@@ -64,21 +64,40 @@ const postWeather = async(postURL, data = {}) => {
         body: JSON.stringify(data)
     });
     try {
-        let dataUI = await res.json(); //this will pass to UI 
+        let message = await res.json(); //this will pass to UI 
+        return message;
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+
+//get Request to  http://localhost:8000/all 
+const getWeatherFromLocal = async(getURL) => {
+    const res = await fetch(getURL);
+    try {
+        let dataUI = await res.json();
         return dataUI;
     } catch (err) {
         console.log(err);
     }
 };
 
-//update UI after 
+//update UI after post request 
+const updateUI = async(getURL) => {
+    const dataUI = await getWeatherFromLocal('/all');
+    console.log(dataUI);
+    dateDiv.innerHTML = `<span> Date: ${dataUI.date} </span>`;
+    tempDiv.innerHTML = `<span> Temperature: ${Number(dataUI.temp).toFixed(2)}°F</span>`;
+    contentDiv.innerHTML = `<span> Feeling: ${dataUI.content} </span>`;
+};
 btnSubmit.addEventListener('click', (e) => {
     e.preventDefault();
     //input variables hold the input values in value attribute 
     let zipCode = document.getElementById('zip').value;
     let feelingText = document.getElementById('feelings').value;
     const URL = baseURL + zipCode + apiStr;
-    getWeather(URL)
+    getWeatherFromOut(URL)
         .then((resData) => {
             //select data from resData to add approperait attributes of dataObj
             dataObj.city = resData.name;
@@ -88,7 +107,11 @@ btnSubmit.addEventListener('click', (e) => {
             dataObj.weather = resData.weather[0];
             postWeather('/submitData', dataObj)
                 .then((resFromLocal) => {
-                    console.log(resFromLocal);
+                    if (resFromLocal.message !== 'request success') {
+                        console.log("please check the info");
+                    } else {
+                        updateUI('/all');
+                    }
                 });
         });
 
