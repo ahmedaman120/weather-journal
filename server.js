@@ -34,7 +34,9 @@ app.post('/submitData', (req, res) => {
     projectData.temp = req.body.temp;
     projectData.date = req.body.date;
     projectData.content = req.body.content;
-    res.send(projectData)
+    projectData.city = req.body.city;
+    projectData.weather = req.body.weather;
+    res.send({ 'message': "request success" })
         .status(200)
         .end();
 });
