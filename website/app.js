@@ -3,9 +3,10 @@
  *1= create two variable apiKey and baseURL to communicate with open weather mape api *
  *2- get all input values entered by user *
  *3- get all output containers *
- *4- call api with get request to get tempreature 
+ *4- call api with get request to get tempreature *
  *      1- after getting the zip code we will concate the baseURL with the zip code
  *      2- call api to get temp
+ * 5- after update ui it must to make input validation and error handling
  *
  */
 
@@ -47,10 +48,16 @@ const btnSubmit = document.getElementById('generate');
 const getWeatherFromOut = async(URL) => {
     let res = await fetch(URL);
     try {
+        if (res.status === 404) {
+            res.json().then((d) => {
+                alert(d.message);
+            });
+            return;
+        }
         let resJSON = await res.json();
         return resJSON;
     } catch (error) {
-        console.log(error);
+        console.log(`error ${error}`);
     }
 };
 /**
@@ -96,23 +103,34 @@ btnSubmit.addEventListener('click', (e) => {
     //input variables hold the input values in value attribute 
     let zipCode = document.getElementById('zip').value;
     let feelingText = document.getElementById('feelings').value;
-    const URL = baseURL + zipCode + apiStr;
-    getWeatherFromOut(URL)
-        .then((resData) => {
-            //select data from resData to add approperait attributes of dataObj
-            dataObj.city = resData.name;
-            dataObj.date = d;
-            dataObj.temp = convertKelvitToFahrenheit(resData.main.temp);
-            dataObj.content = feelingText;
-            dataObj.weather = resData.weather[0];
-            postWeather('/submitData', dataObj)
-                .then((resFromLocal) => {
-                    if (resFromLocal.message !== 'request success') {
-                        console.log("please check the info");
-                    } else {
-                        updateUI('/all');
-                    }
+    if (zipCode == '' || feelingText == '') {
+        alert('please fil zip code and your feelings to get the result. Thank you');
+    } else {
+        if (!Boolean(Number(zipCode))) {
+            alert('please enter zip code of US with 5 digits eg 64504');
+            return;
+        } else {
+            const URL = baseURL + zipCode + apiStr;
+            getWeatherFromOut(URL)
+                .then((resData) => {
+                    //select data from resData to add approperait attributes of dataObj
+                    dataObj.city = resData.name;
+                    dataObj.date = d;
+                    dataObj.temp = convertKelvitToFahrenheit(resData.main.temp);
+                    dataObj.content = feelingText;
+                    dataObj.weather = resData.weather[0];
+                    postWeather('/submitData', dataObj)
+                        .then((resFromLocal) => {
+                            if (resFromLocal.message !== 'request success') {
+                                console.log("please check the info");
+                            } else {
+                                updateUI('/all');
+                            }
+                        });
                 });
-        });
+        }
+    }
+
+
 
 });
